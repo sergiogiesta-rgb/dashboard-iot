@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard IoT</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #111;
+      color: white;
+    }
+
+    .card {
+      background: #222;
+      padding: 20px;
+      margin: 20px;
+      border-radius: 10px;
+      display: inline-block;
+      width: 200px;
+    }
+
+    .value {
+      font-size: 30px;
+      margin-top: 10px;
+    }
+
+    .online {
+      color: #00ff88;
+    }
+
+    .offline {
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Dashboard IoT</h2>
+
+<div class="card">
+  🌡️ Temperatura
+  <div id="temp" class="value">--</div>
+</div>
+
+<div class="card">
+  💧 Humidade
+  <div id="hum" class="value">--</div>
+</div>
+
+<div class="card">
+  Estado
+  <div id="status" class="value offline">offline</div>
+</div>
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+<script>
+const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+
+client.on('connect', () => {
+  client.subscribe('casa/temperatura');
+  client.subscribe('casa/humidade');
+  client.subscribe('casa/status');
+});
+
+client.on('message', (topic, message) => {
+  const msg = message.toString();
+
+  if (topic === 'casa/temperatura') {
+    document.getElementById("temp").innerText = msg + " °C";
+  }
+
+  if (topic === 'casa/humidade') {
+    document.getElementById("hum").innerText = msg + " %";
+  }
+
+  if (topic === 'casa/status') {
+    const el = document.getElementById("status");
+    el.innerText = msg;
+
+    if (msg === "online") {
+      el.className = "value online";
+    } else {
+      el.className = "value offline";
+    }
+  }
+});
+</script>
+
+</body>
+</html>
